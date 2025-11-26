@@ -9,11 +9,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label"; // Usado para rótulos
+import { Label } from "@/components/ui/label";
 
-export function DateTimePicker() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
-
+interface DateTimePickerProps {
+  value: Date | undefined;
+  onChange: (date: Date | undefined) => void;
+}
+export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
   const generateTimeArray = (max: number): string[] => {
     return Array.from({ length: max }, (_, i) => String(i).padStart(2, "0"));
   };
@@ -21,19 +23,18 @@ export function DateTimePicker() {
   const hours = generateTimeArray(24);
   const minutes = generateTimeArray(60);
 
-  const handleTimeChange = (type: "hour" | "minute", value: string) => {
-    if (!date) return;
+  const handleTimeChange = (type: "hour" | "minute", timeValue: string) => {
+    if (!value) return;
 
-    const newDate = new Date(date.getTime());
-    const numValue = parseInt(value, 10);
+    const newDate = new Date(value.getTime());
+    const numValue = parseInt(timeValue, 10);
 
     if (type === "hour") {
       newDate.setHours(numValue);
     } else {
       newDate.setMinutes(numValue);
     }
-
-    setDate(newDate);
+    onChange(newDate);
   };
 
   return (
@@ -43,12 +44,12 @@ export function DateTimePicker() {
           variant={"outline"}
           className={cn(
             "w-[280px] justify-start text-left font-normal",
-            !date && "text-muted-foreground"
+            !value && "text-muted-foreground"
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? (
-            format(date, "dd/MM/yyyy HH:mm")
+          {value ? (
+            format(value, "dd/MM/yyyy HH:mm")
           ) : (
             <span>Selecione data e hora</span>
           )}
@@ -57,8 +58,8 @@ export function DateTimePicker() {
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={date}
-          onSelect={setDate}
+          selected={value}
+          onSelect={onChange}
           initialFocus
         />
 
@@ -66,12 +67,18 @@ export function DateTimePicker() {
           <Label className="text-sm">Hora:</Label>
 
           <select
-            value={date?.getHours().toString().padStart(2, "0") || "00"}
+            value={value?.getHours().toString().padStart(2, "0") || "00"}
             onChange={(e) => handleTimeChange("hour", e.target.value)}
-            className="rounded-md border p-1 text-sm focus:border-blue-500 focus:ring-1"
+            className={cn(
+              "flex h-9 w-fit items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            )}
           >
             {hours.map((h) => (
-              <option key={h} value={h}>
+              <option
+                key={h}
+                value={h}
+                className="bg-background text-foreground"
+              >
                 {h}
               </option>
             ))}
@@ -80,12 +87,18 @@ export function DateTimePicker() {
           <span className="text-lg">:</span>
 
           <select
-            value={date?.getMinutes().toString().padStart(2, "0") || "00"}
+            value={value?.getMinutes().toString().padStart(2, "0") || "00"}
             onChange={(e) => handleTimeChange("minute", e.target.value)}
-            className="rounded-md border p-1 text-sm focus:border-blue-500 focus:ring-1"
+            className={cn(
+              "flex h-9 w-fit items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            )}
           >
             {minutes.map((m) => (
-              <option key={m} value={m}>
+              <option
+                key={m}
+                value={m}
+                className="bg-background text-foreground"
+              >
                 {m}
               </option>
             ))}

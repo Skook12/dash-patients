@@ -1,9 +1,10 @@
+import type { UpdateVisitDate } from "@/models/patients";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useUpdateVisitDate() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async ({ id, last_verified_date }: UpdateVisitDate) => {
       const response = await fetch(
         `https://tatico.spocws.icu/teste/followups_261e/${id}`,
         {
@@ -12,7 +13,7 @@ export function useUpdateVisitDate() {
             "Content-type": "application/json",
           },
           body: JSON.stringify({
-            last_verified_date: "2025/10/01 11:00:00",
+            last_verified_date,
           }),
         }
       );

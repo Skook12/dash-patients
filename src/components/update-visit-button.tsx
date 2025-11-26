@@ -4,6 +4,14 @@ import { CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { showErrorToast, showLoadingToast, showSuccessToast } from "./ui/toast";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -13,66 +21,100 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import { Calendar } from "./ui/calendar";
-import { useState } from "react";
 import { DateTimePicker } from "./date-picker";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
 
 interface UpdateVisitButtonProps {
   patientId: number;
 }
 
+const updateVisitSchema = z.object({
+  visitDate: z.date().refine((date) => date !== null && date !== undefined, {
+    message: "Por favor, selecione uma data.",
+  }),
+});
+
+type UpdateVisitSchema = z.infer<typeof updateVisitSchema>;
+
 export function UpdateVisitButton({ patientId }: UpdateVisitButtonProps) {
   const { mutate: updateVisit } = useUpdateVisitDate();
-  const [date, setDate] = useState<Date | undefined>();
 
-  async function handleSubmit() {
+  const form = useForm<UpdateVisitSchema>({
+    resolver: zodResolver(updateVisitSchema),
+  });
+
+  async function handleUpdateVisit(data: UpdateVisitSchema) {
+    const formattedDate = format(data.visitDate, "yyyy/MM/dd HH:mm:ss");
+
     const loadingToastId = showLoadingToast("Atualizando...");
-    updateVisit(patientId, {
-      onSuccess: () => {
-        toast.dismiss(loadingToastId);
-        showSuccessToast("Visita atualizada com sucesso!");
-      },
-      onError: (error: any) => {
-        toast.dismiss(loadingToastId);
-        showErrorToast(error?.message || "Ocorreu um erro. Tente novamente");
-      },
-    });
+    updateVisit(
+      // @ts-ignore
+      { id: patientId, last_verified_date: formattedDate },
+      {
+        onSuccess: () => {
+          toast.dismiss(loadingToastId);
+          showSuccessToast("Visita atualizada com sucesso!");
+        },
+        onError: (error: any) => {
+          toast.dismiss(loadingToastId);
+          showErrorToast(error?.message || "Ocorreu um erro. Tente novamente");
+        },
+      }
+    );
   }
 
   return (
     <Dialog>
-      <form onSubmit={handleSubmit}>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            className="h-8 w-8 p-0"
-            title="Atualizar data da visita"
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className="h-8 w-8 p-0"
+          title="Atualizar data da visita"
+        >
+          <CalendarClock className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Alteração da data de visita</DialogTitle>
+          <DialogDescription>
+            Altere a data da ultima visita ao paciente
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleUpdateVisit)}
+            className="space-y-6"
           >
-            <CalendarClock className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Alteração da data de visita</DialogTitle>
-            <DialogDescription>
-              Altere a data da ultima visita ao paciente
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4">
-            <div className="flex item-center">
-              <DateTimePicker />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancelar</Button>
-            </DialogClose>
-            <Button type="submit">Salvar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+            <FormField
+              control={form.control}
+              name="visitDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" type="button">
+                  Cancelar
+                </Button>
+              </DialogClose>
+              <Button type="submit">Salvar</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
     </Dialog>
   );
 }

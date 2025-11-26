@@ -6,3 +6,8 @@ export type Patient = {
   last_verified_date: Date;
   verify_frequency_in_days: number;
 };
+
+export type UpdateVisitDate = {
+  id: number;
+  last_verified_date: Date;
+};
