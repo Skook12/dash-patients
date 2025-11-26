@@ -7,10 +7,4 @@ export const menu: any[] = [
     url: "/",
     icon: UsersRound,
   },
-  {
-    id: 2,
-    name: "Teste",
-    url: "/test",
-    icon: UsersRound,
-  },
 ];
