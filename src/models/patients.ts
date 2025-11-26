@@ -9,5 +9,5 @@ export type Patient = {
 
 export type UpdateVisitDate = {
   id: number;
-  last_verified_date: Date;
+  last_verified_date: string;
 };

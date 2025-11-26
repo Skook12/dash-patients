@@ -8,7 +8,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -26,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface UpdateVisitButtonProps {
   patientId: number;
@@ -39,9 +39,9 @@ const updateVisitSchema = z.object({
 
 type UpdateVisitSchema = z.infer<typeof updateVisitSchema>;
 
-export function UpdateVisitButton({ patientId }: UpdateVisitButtonProps) {
+export function UpdateVisitDialog({ patientId }: UpdateVisitButtonProps) {
   const { mutate: updateVisit } = useUpdateVisitDate();
-
+  const [open, setOpen] = useState(false);
   const form = useForm<UpdateVisitSchema>({
     resolver: zodResolver(updateVisitSchema),
   });
@@ -51,12 +51,13 @@ export function UpdateVisitButton({ patientId }: UpdateVisitButtonProps) {
 
     const loadingToastId = showLoadingToast("Atualizando...");
     updateVisit(
-      // @ts-ignore
       { id: patientId, last_verified_date: formattedDate },
       {
         onSuccess: () => {
           toast.dismiss(loadingToastId);
           showSuccessToast("Visita atualizada com sucesso!");
+          form.reset();
+          setOpen(false);
         },
         onError: (error: any) => {
           toast.dismiss(loadingToastId);
@@ -67,7 +68,7 @@ export function UpdateVisitButton({ patientId }: UpdateVisitButtonProps) {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant="outline"

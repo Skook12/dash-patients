@@ -2,7 +2,7 @@ import type { Patient } from "@/models/patients";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle } from "lucide-react";
-import { UpdateVisitButton } from "@/components/update-visit-button";
+import { UpdateVisitDialog } from "@/components/update-visit-dialog";
 
 export const columnsPatients: ColumnDef<Patient>[] = [
   {
@@ -11,7 +11,7 @@ export const columnsPatients: ColumnDef<Patient>[] = [
     cell: ({ row }) => {
       const patient = row.original;
 
-      return <UpdateVisitButton patientId={patient.id} />;
+      return <UpdateVisitDialog patientId={patient.id} />;
     },
   },
   {
@@ -21,6 +21,15 @@ export const columnsPatients: ColumnDef<Patient>[] = [
   {
     accessorKey: "cpf",
     header: "CPF",
+    cell: ({ row }) => {
+      const cpf = row.getValue("cpf") as string;
+
+      if (!cpf) {
+        return null;
+      }
+
+      return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    },
   },
   {
     accessorKey: "last_verified_date",
@@ -28,7 +37,7 @@ export const columnsPatients: ColumnDef<Patient>[] = [
   },
   {
     accessorKey: "verify_frequency_in_days",
-    header: "Frequência da visita",
+    header: "Frequência da visita em dias",
   },
   {
     id: "status",
